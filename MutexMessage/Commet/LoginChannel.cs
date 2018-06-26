@@ -16,6 +16,7 @@ namespace MutexMessage.Commet
         public event LogoutEventHandler LogoutEvent;
         public event LoginEventHandler LoginEvent;
         private WebLoginRedisConsumer WebLoginRedisConsumer;
+        private bool IsActived = false;
         private LoginChannel()
         {
         }
@@ -33,11 +34,12 @@ namespace MutexMessage.Commet
                 LoginEvent(this, e);
             }
         }
-        public void Init(string tentantType,string tentantId)
+        public void Init(string tentantType, string tentantId)
         {
             WebLoginRedisConsumer = new WebLoginRedisConsumer(tentantType, tentantId);
             ChannelInstance.LogoutEvent += WebLoginRedisConsumer.ChannelLogout;
             ChannelInstance.LoginEvent += WebLoginRedisConsumer.ChannelLogin;
+            IsActived = true;
         }
         /// <summary>
         /// 登出事件
@@ -45,13 +47,16 @@ namespace MutexMessage.Commet
         /// <param name="userRedisModel">用户信息</param>
         public void Logout(UserRedisModel userRedisModel)
         {
-            var eventArgs = new LogoutArgs()
+            if (IsActived)
             {
-                UserName = userRedisModel.UserName,
-                UserId = userRedisModel.UserId,
-                FullName = userRedisModel.FullName
-            };
-            OnLogoutEvent(eventArgs);
+                var eventArgs = new LogoutArgs()
+                {
+                    UserName = userRedisModel.UserName,
+                    UserId = userRedisModel.UserId,
+                    FullName = userRedisModel.FullName
+                };
+                OnLogoutEvent(eventArgs);
+            }
         }
         /// <summary>
         /// 登出事件
@@ -59,13 +64,16 @@ namespace MutexMessage.Commet
         /// <param name="userRedisModel">用户信息</param>
         public void Login(UserRedisModel userRedisModel)
         {
-            var eventArgs = new LoginArg()
+            if (IsActived)
             {
-                UserName = userRedisModel.UserName,
-                UserId = userRedisModel.UserId,
-                FullName = userRedisModel.FullName
-            };
-            OnLoginEvent(eventArgs);
+                var eventArgs = new LoginArg()
+                {
+                    UserName = userRedisModel.UserName,
+                    UserId = userRedisModel.UserId,
+                    FullName = userRedisModel.FullName
+                };
+                OnLoginEvent(eventArgs);
+            }
         }
         /// <summary>
         /// 当前用户是否被后续登录者顶替
@@ -74,18 +82,25 @@ namespace MutexMessage.Commet
         /// <returns>true:被顶替了,false:没有被顶替</returns>
         public bool IsCurrentUserReplaced(UserRedisModel userRedisModel)
         {
-            if(WebLoginRedisConsumer==null)
+            if (IsActived)
             {
-                throw new Exception("please call the init method of LoginChannel !");
+                if (WebLoginRedisConsumer == null)
+                {
+                    throw new Exception("please call the init method of LoginChannel !");
+                }
+                var result = WebLoginRedisConsumer.IsReplace(userRedisModel);
+                return result;
             }
-            var result = WebLoginRedisConsumer.IsReplace(userRedisModel);
-            return result;
+            else
+            {
+                return false;
+            }
         }
     }
     /// <summary>
     /// 登出事件参数
     /// </summary>
-    public class LogoutArgs:EventArgs
+    public class LogoutArgs : EventArgs
     {
         public string UserName { get; set; }
         public string UserId { get; set; }
@@ -94,7 +109,7 @@ namespace MutexMessage.Commet
     /// <summary>
     /// 登入事件参数
     /// </summary>
-    public class LoginArg:EventArgs
+    public class LoginArg : EventArgs
     {
         public string UserName { get; set; }
         public string UserId { get; set; }
