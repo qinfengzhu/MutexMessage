@@ -37,8 +37,9 @@
 ```
 protected void Application_Start()
 {
+    string platformAppName = "EDC-Platform";
 	//租户类型与租户Id
-	LoginChannel.ChannelInstance.Init("WMS","SLogin");
+	LoginChannel.ChannelInstance.Init("WMS","SLogin",() => { return platformAppName; });
 }
 
 ```

@@ -15,7 +15,7 @@ namespace MutexMessage.Commet
             //使用Redis共享
             var config = ConfigurationManager.GetSection("redisServer") as RedisConfig;
             var defaultRedis = config.Servers[0];
-            GlobalHost.DependencyResolver.UseRedis(defaultRedis.IP, defaultRedis.Port, config.Servers.Password, CookieKey.DefaultSignalRChannel);
+            GlobalHost.DependencyResolver.UseRedis(defaultRedis.IP, defaultRedis.Port, config.Servers.Password, CookieKey.DefaultAppName());
             //定制Signalr的UserId
             var userIdProvider = new MutexConnectionProvider();           
             GlobalHost.DependencyResolver.Register(typeof(IUserIdProvider), () => userIdProvider);

@@ -9,5 +9,11 @@ namespace MutexMessage.Common
     {
         public const string SignalRId = "srid";
         public const string DefaultSignalRChannel = "BackSignalR";
+        public static Func<string> DefaultAppName;
+
+        static CookieKey()
+        {
+            DefaultAppName = () => { return DefaultSignalRChannel; };
+        }
     }
 }

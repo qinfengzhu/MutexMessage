@@ -1,4 +1,5 @@
-﻿using MutexMessage.Consumer;
+﻿using MutexMessage.Common;
+using MutexMessage.Consumer;
 using System;
 
 namespace MutexMessage.Commet
@@ -34,12 +35,16 @@ namespace MutexMessage.Commet
                 LoginEvent(this, e);
             }
         }
-        public void Init(string tentantType, string tentantId)
+        public void Init(string tentantType, string tentantId,Func<string> appnameFunc=null)
         {
             WebLoginRedisConsumer = new WebLoginRedisConsumer(tentantType, tentantId);
             ChannelInstance.LogoutEvent += WebLoginRedisConsumer.ChannelLogout;
             ChannelInstance.LoginEvent += WebLoginRedisConsumer.ChannelLogin;
             IsActived = true;
+            if (appnameFunc != null)
+            {
+                CookieKey.DefaultAppName = appnameFunc;
+            }
         }
         /// <summary>
         /// 登出事件
